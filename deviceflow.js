@@ -1,59 +1,48 @@
-var request = require('request');
+var rp = require('request-promise');
 require('dotenv').config();
 
 const AZUREAD_ID = process.env.AZUREAD_ID;
 const AZUREAD_APP_ID = process.env.AZUREAD_APP_ID;
-
-var headers = {
-  'Content-Type': 'application/x-www-form-urlencoded'
-}
 
 function requestDeviceCode(builder, session) {
 
   console.log("Requesting device code...");
 
   let options = {
-    url: `https://login.microsoftonline.com/${AZUREAD_ID}/oauth2/devicecode`,
     method: 'POST',
-    headers: headers,
+    uri: `https://login.microsoftonline.com/${AZUREAD_ID}/oauth2/devicecode`,
     json: true,
-    form: { 'resource': 'https://graph.microsoft.com',
-            'client_id': AZUREAD_APP_ID }
-  }
+    form: {
+      resource: 'https://graph.microsoft.com',
+      client_id: AZUREAD_APP_ID
+    }
+  };
 
-  request(options, function (error, response, body) {
+  rp(options)
+    .then((body) => {
+      console.log(`Body: ${body}`);
 
-    console.log(`(HTTP ${response.statusCode}) Body: ${JSON.stringify(body)}`);
-
-    if (!error && response.statusCode == 200) {
-      var code = body.user_code;
-      var deviceCode = body.device_code;
-      var url = body.verification_url;
-      session.privateConversationData.code = code;
-      session.privateConversationData.deviceCode = deviceCode;
-      session.privateConversationData.url = url;
+      session.privateConversationData.deviceCode = body.device_code;
 
       let card = new builder.SigninCard(session)
-        .text(`Sign-in with device code: ${code}`)
-        .button('Sign-in', url)
+        .text(`Sign-in with code: ${body.user_code}`)
+        .button('Sign-in', body.verification_url)
       session.send(new builder.Message(session).addAttachment(card));
-    } else {
+    })
+    .catch((error) => {
       console.log(`Error: ${error}`);
-      session.send('There was a problem with signing you in.');
-    }
-  })
-
+      session.send(`There was a problem with signing you in. ${error}`);
+    });
 }
 
 function queryStatus(builder, session) {
-  
+
   console.log("Waiting until authentication was successful...");
   console.log(`Code: ${session.privateConversationData.deviceCode}`);
 
   let options = {
-    url: `https://login.microsoftonline.com/${AZUREAD_ID}/oauth2/token`,
     method: 'POST',
-    headers: headers,
+    uri: `https://login.microsoftonline.com/${AZUREAD_ID}/oauth2/token`,
     json: true,
     form: {
       'grant_type': 'device_code',
@@ -61,21 +50,26 @@ function queryStatus(builder, session) {
       'code': session.privateConversationData.deviceCode,
       'client_id': AZUREAD_APP_ID
     }
-  }
+  };
 
-  request(options, function (error, response, body) {
-    console.log(`(HTTP ${response.statusCode}) Body: ${JSON.stringify(body)}`);
-    session.userData.access_token =  body.access_token;
-    session.userData.refresh_token =  body.refresh_token;
-    session.send(`Looks like you've been signed-in!`);
-  })
+  rp(options)
+    .then((body) => {
+      console.log(`Body: ${body}`);
+      session.userData.access_token = body.access_token;
+      session.userData.refresh_token = body.refresh_token;
+      session.send(`Looks like you've been signed-in!`);
+    })
+    .catch((error) => {
+      console.log(`Error: ${error}`);
+      session.send(`There was a problem while querying your authentication status.`);
+    });
 }
 
 function updateToken(builder, session) {
+
   let options = {
-    url: `https://login.microsoftonline.com/${AZUREAD_ID}/oauth2/token`,
     method: 'POST',
-    headers: headers,
+    uri: `https://login.microsoftonline.com/${AZUREAD_ID}/oauth2/token`,
     json: true,
     form: {
       'scope': 'User.Read',
@@ -84,35 +78,46 @@ function updateToken(builder, session) {
       'grant_type': 'refresh_token',
       'client_id': AZUREAD_APP_ID
     }
-  }
-  request(options, function (error, response, body) {
-    console.log(`(HTTP ${response.statusCode}) Body: ${JSON.stringify(body)}`);
-    session.send(`I've updated the access token (HTTP ${response.statusCode})`);
-    session.userData.access_token =  body.access_token;
-  })
+  };
+
+  rp(options)
+    .then((body) => {
+      console.log(`Body: ${body}`);
+      session.send(`I've updated the access token (HTTP ${response.statusCode})`);
+      session.userData.access_token = body.access_token;
+    })
+    .catch((error) => {
+      console.log(`Error: ${error}`);
+      session.send(`There was a problem while getting your new access token.`);
+    });
 }
 
 function getUserInformation(builder, session) {
+
   let options = {
-    url: `https://graph.microsoft.com/v1.0/me`,
     method: 'GET',
+    uri: `https://graph.microsoft.com/v1.0/me`,
     json: true,
     headers: {
       'Authorization': `Bearer ${session.userData.access_token}`
     }
   }
 
-  request(options, function (error, response, body) {
-    console.log(`(HTTP ${response.statusCode}) Body: ${JSON.stringify(body)}`);
-    let userInfo = {
-      'id': body.id,
-      'firstname': body.givenName,
-      'lastname': body.surname,
-      'email': body.userPrincipalName
-    }
-    session.send(JSON.stringify(userInfo));
-    return userInfo;
-  })
+  rp(options)
+    .then((body) => {
+      console.log(`Body: ${body}`);
+      let userInfo = {
+        'id': body.id,
+        'firstname': body.givenName,
+        'lastname': body.surname,
+        'email': body.userPrincipalName
+      }
+      session.send(JSON.stringify(userInfo));
+    })
+    .catch((error) => {
+      console.log(`Error: ${error}`);
+      session.send(`There was a problem while getting your user information.`);
+    });
 }
 
 module.exports.requestDeviceCode = requestDeviceCode;
