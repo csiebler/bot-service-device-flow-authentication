@@ -20,7 +20,7 @@ function requestDeviceCode(builder, session) {
 
   rp(options)
     .then((body) => {
-      console.log(`Body: ${body}`);
+      console.log(`Body: ${JSON.stringify(body)}`);
 
       session.privateConversationData.deviceCode = body.device_code;
 
@@ -54,10 +54,11 @@ function queryStatus(builder, session) {
 
   rp(options)
     .then((body) => {
-      console.log(`Body: ${body}`);
+      console.log(`Body: ${JSON.stringify(body)}`);
       session.userData.access_token = body.access_token;
       session.userData.refresh_token = body.refresh_token;
-      session.send(`Looks like you've been signed-in!`);
+      session.userData.expires_on = body.expires_on;
+      session.send(`You've been signed-in!`);
     })
     .catch((error) => {
       console.log(`Error: ${error}`);
@@ -66,6 +67,13 @@ function queryStatus(builder, session) {
 }
 
 function updateToken(builder, session) {
+  console.log("Trying to get new access_token...");
+
+  // get new token if token would time out within 5 minutes
+  if ((Math.floor(Date.now() / 1000)) < (parseInt(session.userData.expires_on) - 300)) {
+    session.send(`Your token is still valid for over 5 minutes.`);
+    return;
+  }
 
   let options = {
     method: 'POST',
@@ -82,9 +90,9 @@ function updateToken(builder, session) {
 
   rp(options)
     .then((body) => {
-      console.log(`Body: ${body}`);
-      session.send(`I've updated the access token (HTTP ${response.statusCode})`);
+      console.log(`Body: ${JSON.stringify(body)}`);
       session.userData.access_token = body.access_token;
+      session.userData.expires_on = body.expires_on;
     })
     .catch((error) => {
       console.log(`Error: ${error}`);
@@ -105,12 +113,11 @@ function getUserInformation(builder, session) {
 
   rp(options)
     .then((body) => {
-      console.log(`Body: ${body}`);
+      console.log(`Body: ${JSON.stringify(body)}`);
       let userInfo = {
         'id': body.id,
         'firstname': body.givenName,
         'lastname': body.surname,
-        'email': body.userPrincipalName
       }
       session.send(JSON.stringify(userInfo));
     })
@@ -120,7 +127,19 @@ function getUserInformation(builder, session) {
     });
 }
 
+function isUserSignedIn(session) {
+  return (session.userData.access_token != null || session.userData.refresh_token != null)
+}
+
+function signOut(session) {
+  delete session.userData.access_token;
+  delete session.userData.refresh_token;
+  delete session.userData.expires_on;
+}
+
 module.exports.requestDeviceCode = requestDeviceCode;
 module.exports.queryStatus = queryStatus;
 module.exports.getUserInformation = getUserInformation;
 module.exports.updateToken = updateToken;
+module.exports.isUserSignedIn = isUserSignedIn;
+module.exports.signOut = signOut;
