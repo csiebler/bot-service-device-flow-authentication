@@ -21,9 +21,7 @@ function requestDeviceCode(builder, session) {
   rp(options)
     .then((body) => {
       console.log(`Body: ${JSON.stringify(body)}`);
-
       session.privateConversationData.deviceCode = body.device_code;
-
       let card = new builder.SigninCard(session)
         .text(`Sign-in with code: ${body.user_code}`)
         .button('Sign-in', body.verification_url)
@@ -62,7 +60,7 @@ function queryStatus(builder, session) {
     })
     .catch((error) => {
       console.log(`Error: ${error}`);
-      session.send(`There was a problem while querying your authentication status.`);
+      session.send(`Looks like you haven't authenticated yet (or there was an error).`);
     });
 }
 
@@ -124,7 +122,7 @@ function getUserInformation(builder, session) {
     })
     .catch((error) => {
       console.log(`Error: ${error}`);
-      session.send(`There was a problem while getting your user information.`);
+      session.send(`There was a problem while getting your user information, most likely you're not authenticated or your access token has expired.`);
     });
 }
 
