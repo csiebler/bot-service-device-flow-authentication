@@ -93,6 +93,7 @@ function updateToken(builder, session) {
       console.log(`Body: ${JSON.stringify(body)}`);
       session.userData.access_token = body.access_token;
       session.userData.expires_on = body.expires_on;
+      session.send(`I've updated your access token.`);
     })
     .catch((error) => {
       console.log(`Error: ${error}`);
@@ -137,9 +138,11 @@ function signOut(session) {
   delete session.userData.expires_on;
 }
 
-module.exports.requestDeviceCode = requestDeviceCode;
-module.exports.queryStatus = queryStatus;
-module.exports.getUserInformation = getUserInformation;
-module.exports.updateToken = updateToken;
-module.exports.isUserSignedIn = isUserSignedIn;
-module.exports.signOut = signOut;
+module.exports = {
+  requestDeviceCode: requestDeviceCode,
+  queryStatus: queryStatus,
+  getUserInformation: getUserInformation,
+  updateToken: updateToken,
+  isUserSignedIn: isUserSignedIn,
+  signOut: signOut
+};
