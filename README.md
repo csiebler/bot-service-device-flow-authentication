@@ -6,7 +6,7 @@ This is a basic example of using Azure Active Directory (AAD) Authentication usi
 
 ## Instructions
 
-First, create a new Storage Account in Azure, copy the connection string and also create an empty Table for persisting the bot's state. Then register your bot as an `Native Application` in the [Apps Dev Portal](https://apps.dev.microsoft.com) (make sure you're signed into the right AAD):
+First, create a new Storage Account in Azure, copy the connection string and also create an empty Table for persisting the bot's state. Then register your bot as an `Native Application` in the [Application Registration Portal](https://apps.dev.microsoft.com) (make sure you're signed into the right AAD):
 
 1. Open [Apps Dev Portal](https://apps.dev.microsoft.com) and click `Add an app`
 1. Give our app a name
