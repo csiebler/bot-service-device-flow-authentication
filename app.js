@@ -47,45 +47,8 @@ bot.dialog('/', [
   }
 ]);
 
-bot.dialog('signin', [
-  (session) => {
-    deviceflow.requestDeviceCode(builder, session);
-    session.endDialog();
-  }
-]);
-
-bot.dialog('signout', [
-  (session) => {
-    deviceflow.signOut(session);
-    session.endDialog(`I've signed you out!`);
-  }
-]);
-
-bot.dialog('querySigninStatus', [
-  (session) => {
-    deviceflow.queryStatus(builder, session);
-    session.endDialog();
-  }
-]);
-
-bot.dialog('updateAccessToken', [
-  (session) => {
-    if (deviceflow.isUserSignedIn(session)) {
-      deviceflow.updateToken(builder, session);
-    } else {
-      session.send(`Please sign-in first!`);
-    }
-    session.endDialog();
-  }
-]);
-
-bot.dialog('showUserInformation', [
-  (session) => {
-    if (deviceflow.isUserSignedIn(session)) {
-      deviceflow.getUserInformation(builder, session);
-    } else {
-      session.send(`Please sign-in first!`);
-    }
-    session.endDialog();
-  }
-]);
+bot.dialog('signin', deviceflow.signInDialog);
+bot.dialog('signout', deviceflow.signOutDialog);
+bot.dialog('querySigninStatus', deviceflow.queryStatusDialog);
+bot.dialog('updateAccessToken', deviceflow.updateAccessTokenDialog);
+bot.dialog('showUserInformation', deviceflow.showUserInformationDialog);
