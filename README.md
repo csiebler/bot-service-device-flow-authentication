@@ -1,11 +1,10 @@
-# Device Flow Authentication Example
+# OAuth 2.0 Device Code Flow Authentication with Azure Bot Framework - Example
 
 # Overview
 
-This is a basic example of using Azure Active Directory (AAD) Authentication using OAuth 2.0 Device Code Flow with Azure Bot Service in Node.js. Full details can be found in this [blog post (not published yet)](https://clemenssiebler.com).
+This is a basic example of using Azure Active Directory (AAD) Authentication using OAuth 2.0 Device Code Flow with Azure Bot Service in Node.js. Full details can be found in this [blog post](https://clemenssiebler.com/blog/2018/05/azure-active-directory-authentication-using-oauth-2.0-device-code-flow-with-azure-bot-service-and-node.js/).
 
 ![Screenshot](screenshot.jpg "Screenshot")
-
 
 ## Instructions
 
