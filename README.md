@@ -4,6 +4,9 @@
 
 This is a basic example of using Azure Active Directory (AAD) Authentication using OAuth 2.0 Device Code Flow with Azure Bot Service in Node.js. Full details can be found in this [blog post (not published yet)](https://clemenssiebler.com).
 
+![Screenshot](screenshot.jpg "Screenshot")
+
+
 ## Instructions
 
 First, create a new Storage Account in Azure, copy the connection string and also create an empty Table for persisting the bot's state. Then register your bot as an `Native Application` in the [Application Registration Portal](https://apps.dev.microsoft.com) (make sure you're signed into the right AAD):
